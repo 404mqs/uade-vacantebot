@@ -16,7 +16,7 @@ Este script utiliza Selenium para buscar vacantes en las clases de la UADE y not
 
 ```2.``` Instala las dependencias: ```pip install -r requirements.txt```
 
-```3```. Descarga el driver de Selenium para Chrome:
+```3.``` Descarga el driver de Selenium para Chrome:
 - Visita [ChromeDriver](https://googlechromelabs.github.io/chrome-for-testing/#stable)
 - Descarga la versión compatible con tu versión de Chrome
 - Descomprime el archivo y guarda el ejecutable en una ubicación conocida
