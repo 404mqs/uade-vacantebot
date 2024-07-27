@@ -1,6 +1,6 @@
 # Detector de Vacantes de Materias UADE
 
-Este script utiliza Selenium para buscar vacantes en las clases de la UADE (Universidad Argentina de la Empresa) y notificar al usuario vía email, notificación de escritorio y voz.
+Este script utiliza Selenium para buscar vacantes en las clases de la UADE y notificar al usuario vía email, notificación de escritorio y voz.
 
 ## Características
 
@@ -17,7 +17,7 @@ Este script utiliza Selenium para buscar vacantes en las clases de la UADE (Univ
 ```2.``` Instala las dependencias: ```pip install -r requirements.txt```
 
 ```3```. Descarga el driver de Selenium para Chrome:
-- Visita [ChromeDriver](https://sites.google.com/a/chromium.org/chromedriver/downloads)
+- Visita [ChromeDriver](https://googlechromelabs.github.io/chrome-for-testing/#stable)
 - Descarga la versión compatible con tu versión de Chrome
 - Descomprime el archivo y guarda el ejecutable en una ubicación conocida
 
