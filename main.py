@@ -89,8 +89,9 @@ def scrape_data(codigos_materias, codigos_ignorar):
                 driver.execute_script("arguments[0].click();", checkbox)
                 print(f"[!] Checkbox de la materia con código {codigo_materia} seleccionado exitosamente.\n")
             
-            except Exception as e:
-                print(f"Error al seleccionar la materia con código {codigo_materia}: {str(e)}")
+            except:
+                print(f"[!] Error al seleccionar la materia con código {codigo_materia}.")
+                pass
 
         # Hacer clic en el elemento "Cerrar"
         driver.find_element(By.XPATH, get_xpath(driver,'udAzQeon0tR0N2S')).click()
@@ -142,7 +143,7 @@ def scrape_data(codigos_materias, codigos_ignorar):
                                 print(f"[!] Vacantes encontradas para la clase {extract_course_name(column_data[1])}!")
 
                                 # Construir el mensaje con el f-string
-                                message = f"¡Se ha encontrado una vacante para {extract_course_name(materia.text)}! Revisa inscripciones."
+                                message = f"¡Se ha encontrado una vacante para {extract_course_name(materia.text)}! Curso {column_data[1]}. Chequear pagina de inscripciones."
 
                                 notifier.notify("Vacante Encontrada", message)
                                 stop = True
@@ -177,5 +178,8 @@ else:
         print("\n[!] Reanudando bucle...\n")
         time.sleep(intervalo_chequeo)  # Espera según el intervalo definido
         os.system('cls')
+
+
+
 
 
