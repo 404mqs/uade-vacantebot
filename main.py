@@ -37,6 +37,7 @@ options.add_argument('--ignore-certificate-errors')
 options.add_argument('--headless')  # Ejecutar en modo headless
 options.add_argument('--disable-gpu')  # Desactivar la GPU (a veces necesario en modo headless)
 options.add_argument('--window-size=1920x1080')  # Tamaño de ventana para evitar errores
+options.binary_location= 'Z:\\Descargas\\chrome-win64\\chrome-win64\\chrome.exe'
 
 # Inicializa el navegador con el servicio especificado
 driver = webdriver.Chrome(service=service, options=options)
@@ -61,106 +62,106 @@ def scrape_data(codigos_materias, codigos_ignorar):
 
     print("[++] ---- DETECTOR DE VACANTES UADE ---- [++]\n")
 
-    stop = False  # Inicializa stop aquí
+    materias_a_seleccionar_local = codigos_materias.copy()  # Copia local de materias a seleccionar
 
     try:
         # Hacer clic en el elemento "Seleccione sus Mater..."
         driver.find_element(By.XPATH, get_xpath(driver,'KCOLYNpPpspdc6u')).click()
 
         # Esperar a que la página se cargue completamente
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 5).until(
             EC.presence_of_element_located((By.ID, "ContentPlaceHolder1_ucMateriaInscripcionBuscador_rptMaterias_grdMaterias_0"))
         )
 
-        for codigo_materia in codigos_materias:
-            try:
-                # Buscar el checkbox de la materia por su código
-                checkbox_xpath = f"//td[contains(@class, 'colCodigo') and text()='{codigo_materia}']/preceding-sibling::td[contains(@class, 'colAcciones')]//input[@type='checkbox']"
+        while materias_a_seleccionar_local:
+            for codigo_materia in materias_a_seleccionar_local:
+                try:
+                    # Buscar el checkbox de la materia por su código
+                    checkbox_xpath = f"//td[contains(@class, 'colCodigo') and text()='{codigo_materia}']/preceding-sibling::td[contains(@class, 'colAcciones')]//input[@type='checkbox']"
+                    
+                    # Esperar a que el checkbox esté presente en el DOM
+                    checkbox = WebDriverWait(driver, 10).until(
+                        EC.presence_of_element_located((By.XPATH, checkbox_xpath))
+                    )
+
+                    # Hacer scroll hasta el elemento para asegurarnos de que es visible
+                    driver.execute_script("arguments[0].scrollIntoView(true);", checkbox)
+
+                    # Usar JavaScript para hacer clic en el checkbox
+                    driver.execute_script("arguments[0].click();", checkbox)
                 
-                # Esperar a que el checkbox esté presente en el DOM
-                checkbox = WebDriverWait(driver, 10).until(
-                    EC.presence_of_element_located((By.XPATH, checkbox_xpath))
-                )
-
-                # Hacer scroll hasta el elemento para asegurarnos de que es visible
-                driver.execute_script("arguments[0].scrollIntoView(true);", checkbox)
-
-                # Usar JavaScript para hacer clic en el checkbox
-                driver.execute_script("arguments[0].click();", checkbox)
-                print(f"[!] Checkbox de la materia con código {codigo_materia} seleccionado exitosamente.\n")
-            
-            except:
-                print(f"[!] Error al seleccionar la materia con código {codigo_materia}.")
-                pass
-
-        # Hacer clic en el elemento "Cerrar"
-        driver.find_element(By.XPATH, get_xpath(driver,'udAzQeon0tR0N2S')).click()
-
-        # Seleccionar el turno
-        select_element = driver.find_element(By.XPATH, '//*[@id="ContentPlaceHolder1_cboTurno"]')
-        select = Select(select_element)
-        select.select_by_visible_text(uade_turno)
-
-        time.sleep(2)
-
-        # Marca todos los checkboxes si no están ya seleccionados
-        checkboxes = driver.find_elements(By.XPATH, '//td//input[@type="checkbox"]')
-        for checkbox in checkboxes:
-            if not checkbox.is_selected():
-                try:
-                    checkbox.click()
                 except:
+                    print(f"[!] Error al seleccionar la materia con código {codigo_materia}.")
                     pass
 
-        # Encuentra y clic en el botón "Buscar"
-        buscar_button = driver.find_element(By.ID, 'ContentPlaceHolder1_btnBuscar')
-        buscar_button.click()
+            # Hacer clic en el elemento "Cerrar"
+            driver.find_element(By.XPATH, get_xpath(driver,'udAzQeon0tR0N2S')).click()
 
-        time.sleep(2)  # Espera a que se cargue la tabla
+            # Seleccionar el turno
+            select_element = driver.find_element(By.XPATH, '//*[@id="ContentPlaceHolder1_cboTurno"]')
+            select = Select(select_element)
+            select.select_by_visible_text(uade_turno)
 
-        # Encuentra la tabla general que contiene todas las materias
-        materias = driver.find_elements(By.CLASS_NAME, "anio")
+            time.sleep(2)
 
-        for index, materia in enumerate(materias):
-            if materia.text.strip():
-                print("\n-------------------------------------------------")
-                print(f"\nMateria: {materia.text}\n")
+            # Marca todos los checkboxes si no están ya seleccionados
+            checkboxes = driver.find_elements(By.XPATH, '//td//input[@type="checkbox"]')
+            for checkbox in checkboxes:
+                if not checkbox.is_selected():
+                    try:
+                        checkbox.click()
+                    except:
+                        pass
 
-                # Encuentra la tabla de clases para esta materia
-                tabla_id = f"ContentPlaceHolder1_rptMateriaClases_grdClases_{index}_grdResultados_{index}"
-                try:
-                    tabla = driver.find_element(By.ID, tabla_id)
+            # Encuentra y clic en el botón "Buscar"
+            buscar_button = driver.find_element(By.ID, 'ContentPlaceHolder1_btnBuscar')
+            buscar_button.click()
 
-                    # Obtiene las filas de la tabla
-                    rows = tabla.find_elements(By.TAG_NAME, "tr")
+            time.sleep(2)  # Espera a que se cargue la tabla
 
-                    for row in rows:
-                        columns = row.find_elements(By.TAG_NAME, "td")
-                        column_data = [column.text for column in columns]
-                        if len(column_data) != 0 and column_data[1] not in codigos_ignorar:
-                            print(column_data)
-                            if int(column_data[14]) > 0:
-                                print(f"[!] Vacantes encontradas para la clase {extract_course_name(column_data[1])}!")
+            # Encuentra la tabla general que contiene todas las materias
+            materias = driver.find_elements(By.CLASS_NAME, "anio")
 
-                                # Construir el mensaje con el f-string
-                                message = f"¡Se ha encontrado una vacante para {extract_course_name(materia.text)}! Curso {column_data[1]}. Chequear pagina de inscripciones."
+            for index, materia in enumerate(materias):
+                if materia.text.strip():
+                    print("-------------------------------------------------")
+                    print(f"\nObteniendo datos de materia: {materia.text}\n")
 
-                                notifier.notify("Vacante Encontrada", message)
-                                stop = True
+                    # Encuentra la tabla de clases para esta materia
+                    tabla_id = f"ContentPlaceHolder1_rptMateriaClases_grdClases_{index}_grdResultados_{index}"
+                    try:
+                        tabla = driver.find_element(By.ID, tabla_id)
 
-                except Exception as e:
-                    pass
+                        # Obtiene las filas de la tabla
+                        rows = tabla.find_elements(By.TAG_NAME, "tr")
 
-        if stop:
-            print("\n[+] VACANTE ENCONTRADA. :D")
-            # Llama al método notify para enviar notificaciones
-            return 1
+                        for row in rows:
+                            columns = row.find_elements(By.TAG_NAME, "td")
+                            column_data = [column.text for column in columns]
+                            if len(column_data) != 0 and column_data[1] not in codigos_ignorar:
+                                print(column_data)
+                                if int(column_data[14]) > 0:
+                                    print(f"[!] Vacantes encontradas para la clase {extract_course_name(column_data[1])}!")
+                                    # Construir el mensaje con el f-string
+                                    message = f"¡Se ha encontrado una vacante para {extract_course_name(materia.text)}! Curso {column_data[1]}. Chequear pagina de inscripciones."
+
+                                    notifier.notify("Vacante Encontrada", message)
+                                    if not modo_repetitivo:  # Solo eliminar en modo no repetitivo
+                                        materias_a_seleccionar_local.remove(codigo_materia)
+                                        codigos_materias.remove(codigo_materia)
+                                    break
+
+                    except Exception as e:
+                        pass
+
+            if not materias_a_seleccionar_local:
+                print("\n[+] Todas las materias han sido revisadas. :D")
+                return 1
 
         # Si no se encontró vacante, devuelve 0
         return 0
 
     except Exception as e:
-        print(f"Se produjo un error: {e}")
         return 0
 
 # Bucle para actualizar la página según el modo definido
