@@ -1,6 +1,7 @@
 import configparser
 import os
 import time
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
@@ -8,10 +9,12 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from elements_manager import get_xpath
-from notifier import Notifier  
+from notifier import Notifier
+
 # Leer configuración desde el archivo config.ini
 config = configparser.ConfigParser()
 config.read('config.ini')
+
 # Obtener la configuración
 driver_path = config.get('settings', 'driver_path')
 uade_user = config.get('settings', 'uade_user')
@@ -22,9 +25,11 @@ email_password = config.get('settings', 'email_password')
 email_recipient = config.get('settings', 'email_recipient')
 intervalo_chequeo = config.getint('settings', 'intervalo_chequeo')
 modo_repetitivo = config.getboolean('settings', 'modo_repetitivo')  # Leer configuración de modo repetitivo
+
 # Leer listas de materias y códigos a ignorar
 materias_a_seleccionar = [item.strip() for item in config.get('materias', 'materias_a_seleccionar').split(',')]
 codigos_a_ignorar = [item.strip() for item in config.get('ignorar', 'codigos_a_ignorar').split(',')]
+
 # Configuración del servicio de ChromeDriver
 service = Service(driver_path)
 options = webdriver.ChromeOptions()
@@ -32,11 +37,15 @@ options.add_argument('--ignore-certificate-errors')
 options.add_argument('--headless')  # Ejecutar en modo headless
 options.add_argument('--disable-gpu')  # Desactivar la GPU (a veces necesario en modo headless)
 options.add_argument('--window-size=1920x1080')  # Tamaño de ventana para evitar errores
+
 # Inicializa el navegador con el servicio especificado
 driver = webdriver.Chrome(service=service, options=options)
+
 # Configura el notificador
+
 notifier = Notifier(email_user, email_password, email_recipient)
 os.system("cls")
+
 def extract_course_name(text):
     # Encontrar la posición del guion y el espacio siguiente
     delimiter_index = text.find(' - ')
@@ -44,12 +53,15 @@ def extract_course_name(text):
         # Extraer la parte después del guion
         return text[delimiter_index + 3:].strip()
     return text.strip()
+
 def scrape_data(codigos_materias, codigos_ignorar):
     # Abre la URL en el navegador
     driver.get(f'https://{uade_user}:{uade_pass}@inscripcionespia.uade.edu.ar/InscripcionClaseBuscar.aspx?param=D5o2MtoGiK0%3d-P0lkU2Vzc2lvbj0scGFyYW1BbHVtSWQ9Mjk2MTgyLHBhcmFtTml2QWNhZD0xMzAscGFyYW1BbmlvQ2FsZW5kYXJpbz0yMDI0LHBhcmFtQ3VhdHJpbWVzdHJlPTU5NyxwYXJhbVNlZGU9MSxwYXJhbVRpcG9BZG1pbj0zNDAzMCxwYXJhbVRpcG9JbnZvY2Fkb3I9MixwYXJhbVByaVZlej0xLHBhcmFtT2ZyZWNpbWllbnRvPQ%3d%3d')
     os.system("cls")
+
     print("[++] ---- DETECTOR DE VACANTES UADE ---- [++]\n")
     stop = False  # Inicializa stop aquí
+
     try:
         # Hacer clic en el elemento "Seleccione sus Mater..."
         driver.find_element(By.XPATH, get_xpath(driver,'KCOLYNpPpspdc6u')).click()
@@ -80,11 +92,13 @@ def scrape_data(codigos_materias, codigos_ignorar):
 
         # Hacer clic en el elemento "Cerrar"
         driver.find_element(By.XPATH, get_xpath(driver,'udAzQeon0tR0N2S')).click()
+
         # Seleccionar el turno
         select_element = driver.find_element(By.XPATH, '//*[@id="ContentPlaceHolder1_cboTurno"]')
         select = Select(select_element)
         select.select_by_visible_text(uade_turno)
         time.sleep(2)
+
         # Marca todos los checkboxes si no están ya seleccionados
         checkboxes = driver.find_elements(By.XPATH, '//td//input[@type="checkbox"]')
         for checkbox in checkboxes:
@@ -93,10 +107,13 @@ def scrape_data(codigos_materias, codigos_ignorar):
                     checkbox.click()
                 except:
                     pass
+
         # Encuentra y clic en el botón "Buscar"
         buscar_button = driver.find_element(By.ID, 'ContentPlaceHolder1_btnBuscar')
         buscar_button.click()
+
         time.sleep(2)  # Espera a que se cargue la tabla
+
         # Encuentra la tabla general que contiene todas las materias
         materias = driver.find_elements(By.CLASS_NAME, "anio")
         for index, materia in enumerate(materias):
@@ -123,6 +140,7 @@ def scrape_data(codigos_materias, codigos_ignorar):
 
                                 notifier.notify("Vacante Encontrada", message)
                                 stop = True
+                                
                 except Exception as e:
                     pass
         if stop:
@@ -134,6 +152,7 @@ def scrape_data(codigos_materias, codigos_ignorar):
     except Exception as e:
         print(f"Se produjo un error: {e}")
         return 0
+    
 # Bucle para actualizar la página según el modo definido
 if modo_repetitivo:
     while True:
@@ -141,6 +160,7 @@ if modo_repetitivo:
         print("\n[!] Reanudando bucle...\n")
         time.sleep(intervalo_chequeo)  # Espera según el intervalo definido
         os.system('cls')
+
 else:
     while True:
         resultado = scrape_data(materias_a_seleccionar, codigos_a_ignorar)
