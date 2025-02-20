@@ -57,7 +57,7 @@ def extract_course_name(text):
 
 def scrape_data(codigos_materias, codigos_ignorar, materias_notificadas):
     # Abre la URL en el navegador
-    driver.get(f'https://{uade_user}:{uade_pass}@inscripcionespia.uade.edu.ar/InscripcionClaseBuscar.aspx?param=D5o2MtoGiK0%3d-P0lkU2Vzc2lvbj0scGFyYW1BbHVtSWQ9Mjk2MTgyLHBhcmFtTml2QWNhZD0xMzAscGFyYW1BbmlvQ2FsZW5kYXJpbz0yMDI0LHBhcmFtQ3VhdHJpbWVzdHJlPTU5NyxwYXJhbVNlZGU9MSxwYXJhbVRpcG9BZG1pbj0zNDAzMCxwYXJhbVRpcG9JbnZvY2Fkb3I9MixwYXJhbVByaVZlej0xLHBhcmFtT2ZyZWNpbWllbnRvPQ%3d%3d')
+    driver.get(f'https://{uade_user}:{uade_pass}@inscripcionespia.uade.edu.ar/InscripcionClaseBuscar.aspx?param=X2K5Fycfm8c%3d-P0lkU2Vzc2lvbj0scGFyYW1BbHVtSWQ9Mjk2MTgyLHBhcmFtTml2QWNhZD0xMzAscGFyYW1BbmlvQ2FsZW5kYXJpbz0yMDI1LHBhcmFtQ3VhdHJpbWVzdHJlPTU5NixwYXJhbVNlZGU9MSxwYXJhbVRpcG9BZG1pbj0zNDAzMCxwYXJhbVRpcG9JbnZvY2Fkb3I9MixwYXJhbVByaVZlej0xLHBhcmFtT2ZyZWNpbWllbnRvPQ%3d%3d')
     os.system("cls")
 
     print("[++] ---- DETECTOR DE VACANTES UADE ---- [++]\n")
